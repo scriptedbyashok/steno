@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Steno Practice</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Dictation Practice</h1>
+    <div id="card-list">Loading…</div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="api.js"></script>
+  <script>
+    function formatTimeLimit(seconds) {
+      if (!seconds) return "Untimed";
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `⏱ ${m}:${String(s).padStart(2, "0")}`;
+    }
+
+    async function loadCards() {
+      const listEl = document.getElementById("card-list");
+      listEl.innerHTML = spinnerHtml("Loading dictations…");
+      try {
+        const dictations = await apiGetDictations();
+        if (!dictations.length) {
+          listEl.textContent = "No dictations yet. Check back soon!";
+          return;
+        }
+        listEl.innerHTML = "";
+        dictations.forEach((d) => {
+          const card = document.createElement("div");
+          card.className = "card dictation-card";
+          const statsLine =
+            d.attempt_count > 0
+              ? `Best: ${d.best_accuracy}% &middot; Last: ${formatDate(d.last_attempt_at)}`
+              : "No attempts yet";
+          card.innerHTML = `
+            <h2>${d.title}</h2>
+            <p>${formatTimeLimit(d.time_limit_seconds)} &middot; ${d.attempt_count} attempt${d.attempt_count === 1 ? "" : "s"}</p>
+            <p class="muted">${statsLine}</p>
+          `;
+          card.addEventListener("click", () => {
+            window.location.href = `test.html?id=${d.id}`;
+          });
+          listEl.appendChild(card);
+        });
+      } catch (err) {
+        listEl.textContent = "Failed to load dictations.";
+        showToast(err.message, "error");
+      }
+    }
+
+    loadCards();
+  </script>
+</body>
+</html>

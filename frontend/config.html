@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin — Steno Practice</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Dictation Admin</h1>
+
+    <section id="login-section" class="card">
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" autocomplete="username" />
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" autocomplete="current-password" />
+      <button id="login-btn">Log In</button>
+    </section>
+
+    <section id="admin-section" class="card" style="display: none">
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <strong id="logged-in-as"></strong>
+        <button class="secondary" id="logout-btn">Log Out</button>
+      </div>
+
+      <hr style="margin: 1rem 0; border: none; border-top: 1px solid #eee" />
+
+      <h2 style="margin-top: 0">Upload New Dictation</h2>
+      <form id="upload-form">
+        <label for="upload-title">Title</label>
+        <input type="text" id="upload-title" required />
+
+        <label for="upload-audio">Audio file (mp3, wav, m4a — max 25MB)</label>
+        <input type="file" id="upload-audio" accept=".mp3,.wav,.m4a" required />
+
+        <label for="upload-transcript">Transcript</label>
+        <textarea id="upload-transcript" required></textarea>
+
+        <div class="toggle-row">
+          <input type="checkbox" id="timed-toggle" />
+          <label for="timed-toggle">Timed test?</label>
+        </div>
+        <div id="time-limit-wrap" style="display: none">
+          <label for="time-limit">Time limit (seconds)</label>
+          <input type="number" id="time-limit" min="1" />
+        </div>
+
+        <button type="submit" id="upload-btn">Upload</button>
+      </form>
+    </section>
+
+    <section id="list-section" class="card" style="display: none">
+      <h2 style="margin-top: 0">Existing Dictations</h2>
+      <div id="dictation-list">Loading…</div>
+    </section>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="api.js"></script>
+  <script>
+    let accessToken = sessionStorage.getItem("steno_admin_token") || null;
+    let userEmail = sessionStorage.getItem("steno_admin_email") || null;
+
+    const loginSection = document.getElementById("login-section");
+    const adminSection = document.getElementById("admin-section");
+    const listSection = document.getElementById("list-section");
+
+    function showAdminUI() {
+      loginSection.style.display = "none";
+      adminSection.style.display = "block";
+      listSection.style.display = "block";
+      document.getElementById("logged-in-as").textContent = userEmail || "";
+      loadDictationList();
+    }
+
+    function showLoginUI() {
+      loginSection.style.display = "block";
+      adminSection.style.display = "none";
+      listSection.style.display = "none";
+    }
+
+    if (accessToken) {
+      showAdminUI();
+    } else {
+      showLoginUI();
+    }
+
+    document.getElementById("login-btn").addEventListener("click", async () => {
+      const btn = document.getElementById("login-btn");
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+      if (!email || !password) {
+        showToast("Enter email and password", "error");
+        return;
+      }
+      setLoading(btn, true);
+      try {
+        accessToken = await supabaseLogin(email, password);
+        userEmail = email;
+        sessionStorage.setItem("steno_admin_token", accessToken);
+        sessionStorage.setItem("steno_admin_email", email);
+        showToast("Logged in", "success");
+        showAdminUI();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      accessToken = null;
+      userEmail = null;
+      sessionStorage.removeItem("steno_admin_token");
+      sessionStorage.removeItem("steno_admin_email");
+      showLoginUI();
+    });
+
+    document.getElementById("timed-toggle").addEventListener("change", (e) => {
+      document.getElementById("time-limit-wrap").style.display = e.target.checked
+        ? "block"
+        : "none";
+    });
+
+    document.getElementById("upload-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("upload-btn");
+      const title = document.getElementById("upload-title").value.trim();
+      const transcript = document.getElementById("upload-transcript").value.trim();
+      const fileInput = document.getElementById("upload-audio");
+      const isTimed = document.getElementById("timed-toggle").checked;
+      const timeLimit = document.getElementById("time-limit").value;
+
+      if (!fileInput.files.length) {
+        showToast("Choose an audio file", "error");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("audio", fileInput.files[0]);
+      formData.append("title", title);
+      formData.append("transcript", transcript);
+      if (isTimed && timeLimit) {
+        formData.append("time_limit_seconds", timeLimit);
+      }
+
+      setLoading(btn, true);
+      try {
+        await apiUploadDictation(accessToken, formData);
+        showToast("Dictation uploaded", "success");
+        e.target.reset();
+        document.getElementById("time-limit-wrap").style.display = "none";
+        loadDictationList();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+
+    async function loadDictationList() {
+      const listEl = document.getElementById("dictation-list");
+      listEl.textContent = "Loading…";
+      try {
+        const dictations = await apiGetDictations();
+        if (!dictations.length) {
+          listEl.textContent = "No dictations yet.";
+          return;
+        }
+        listEl.innerHTML = "";
+        dictations.forEach((d) => {
+          const row = document.createElement("div");
+          row.className = "dictation-row";
+          row.innerHTML = `<span>${d.title}</span>`;
+          const delBtn = document.createElement("button");
+          delBtn.className = "danger";
+          delBtn.textContent = "Delete";
+          delBtn.style.marginTop = "0";
+          delBtn.addEventListener("click", () => deleteDictation(d.id, d.title));
+          row.appendChild(delBtn);
+          listEl.appendChild(row);
+        });
+      } catch (err) {
+        listEl.textContent = "Failed to load dictations.";
+        showToast(err.message, "error");
+      }
+    }
+
+    async function deleteDictation(id, title) {
+      if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+      try {
+        await apiDeleteDictation(accessToken, id);
+        showToast("Deleted", "success");
+        loadDictationList();
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+  </script>
+</body>
+</html>

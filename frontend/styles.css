@@ -1,0 +1,284 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f7f7f9;
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  margin-top: 0.9rem;
+}
+
+label:first-child {
+  margin-top: 0;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="file"],
+textarea {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #d5d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.toggle-row label {
+  margin: 0;
+}
+
+button {
+  font-size: 1rem;
+  font-family: inherit;
+  padding: 0.65rem 1.1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #2563eb;
+  color: #fff;
+  margin-top: 1rem;
+  margin-right: 0.5rem;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+button.secondary {
+  background: #e5e7eb;
+  color: #1a1a1a;
+}
+
+button.secondary:hover {
+  background: #d1d5db;
+}
+
+button.danger {
+  background: #dc2626;
+}
+
+button.danger:hover {
+  background: #b91c1c;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.dictation-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.dictation-row:last-child {
+  border-bottom: none;
+}
+
+#toast-container {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 1000;
+  width: 90%;
+  max-width: 420px;
+}
+
+.toast {
+  background: #1a1a1a;
+  color: #fff;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s, transform 0.3s;
+  text-align: center;
+}
+
+.toast-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-error {
+  background: #dc2626;
+}
+
+.toast-success {
+  background: #16a34a;
+}
+
+.dictation-card {
+  cursor: pointer;
+}
+
+.dictation-card h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+}
+
+.dictation-card p {
+  margin: 0;
+  color: #555;
+}
+
+.timer {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: right;
+  margin-bottom: 0.75rem;
+}
+
+.accuracy-display {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.counts-display {
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+.word-diff {
+  line-height: 2.2;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.diff-word {
+  display: inline-block;
+}
+
+.diff-correct {
+  color: #16a34a;
+}
+
+.diff-wrong {
+  color: #dc2626;
+}
+
+.diff-wrong s {
+  color: #999;
+}
+
+.diff-missed {
+  color: #dc2626;
+  text-decoration: underline;
+}
+
+.diff-extra {
+  color: #ea580c;
+}
+
+.spinner-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #555;
+}
+
+.spinner {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid #d5d5db;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.muted {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+details.attempts-history summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.attempt-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.attempt-row:last-child {
+  border-bottom: none;
+}
+
+.attempt-row:hover {
+  background: #f7f7f9;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1rem 0.85rem;
+  }
+}

@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Test — Steno Practice</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1 id="dictation-title">Loading…</h1>
+
+    <section id="listening-view" class="card" style="display: none">
+      <div id="audio-container"></div>
+      <button id="start-test-btn">Start Test</button>
+    </section>
+
+    <section id="testing-view" class="card" style="display: none">
+      <div id="timer" class="timer"></div>
+      <textarea
+        id="typed-text"
+        placeholder="Type what you hear…"
+        spellcheck="false"
+        autocomplete="off"
+        autocapitalize="off"
+      ></textarea>
+      <button id="submit-btn">Submit</button>
+      <button id="cancel-btn" class="secondary">Cancel</button>
+    </section>
+
+    <section id="result-view" class="card" style="display: none">
+      <div id="best-last-display" class="muted"></div>
+      <div id="accuracy-display" class="accuracy-display"></div>
+      <div id="counts-display" class="counts-display"></div>
+      <div id="word-diff-display" class="word-diff"></div>
+      <button id="try-again-btn">Try Again</button>
+      <button id="home-btn" class="secondary">Home</button>
+    </section>
+
+    <section class="card">
+      <details class="attempts-history" id="attempts-history">
+        <summary>Attempt History</summary>
+        <div id="attempts-list">Loading…</div>
+      </details>
+    </section>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="api.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const dictationId = params.get("id");
+
+    let dictation = null;
+    let timerInterval = null;
+    let startedAt = null;
+    let currentState = "LOADING";
+
+    const listeningView = document.getElementById("listening-view");
+    const testingView = document.getElementById("testing-view");
+    const resultView = document.getElementById("result-view");
+    const audioContainer = document.getElementById("audio-container");
+    const timerEl = document.getElementById("timer");
+    const typedTextEl = document.getElementById("typed-text");
+
+    function setState(state) {
+      currentState = state;
+      listeningView.style.display = state === "LISTENING" ? "block" : "none";
+      testingView.style.display = state === "TESTING" ? "block" : "none";
+      resultView.style.display = state === "RESULT" ? "block" : "none";
+    }
+
+    function renderAudio() {
+      audioContainer.innerHTML = "";
+      const audio = document.createElement("audio");
+      audio.controls = true;
+      audio.src = dictation.audio_url;
+      audioContainer.appendChild(audio);
+    }
+
+    function enterListening() {
+      clearInterval(timerInterval);
+      renderAudio();
+      typedTextEl.value = "";
+      setState("LISTENING");
+    }
+
+    function enterTesting() {
+      audioContainer.innerHTML = ""; // fully remove the audio element from the DOM
+      typedTextEl.value = "";
+      setState("TESTING");
+      startedAt = Date.now();
+      startTimer();
+      typedTextEl.focus();
+    }
+
+    function startTimer() {
+      const limit = dictation.time_limit_seconds;
+      timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+        if (limit) {
+          const remaining = limit - elapsed;
+          if (remaining <= 0) {
+            timerEl.textContent = "0:00";
+            clearInterval(timerInterval);
+            handleSubmit(true);
+            return;
+          }
+          timerEl.textContent = formatSeconds(remaining);
+        } else {
+          timerEl.textContent = formatSeconds(elapsed);
+        }
+      }, 250);
+    }
+
+    function formatSeconds(total) {
+      const m = Math.floor(total / 60);
+      const s = total % 60;
+      return `${m}:${String(s).padStart(2, "0")}`;
+    }
+
+    async function handleSubmit(auto = false) {
+      clearInterval(timerInterval);
+      const typedText = typedTextEl.value;
+      const timeTaken = Math.floor((Date.now() - startedAt) / 1000);
+      const submitBtn = document.getElementById("submit-btn");
+      setLoading(submitBtn, true);
+      try {
+        const result = await apiSubmitAttempt(dictationId, typedText, timeTaken);
+        renderResult(result);
+        setState("RESULT");
+        if (auto) showToast("Time's up — submitted automatically", "info");
+        loadAttemptsHistory();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        setLoading(submitBtn, false);
+      }
+    }
+
+    function renderResult(result) {
+      document.getElementById(
+        "accuracy-display"
+      ).textContent = `${result.accuracy}% accuracy`;
+      document.getElementById("counts-display").textContent =
+        `Correct: ${result.correct}  Wrong: ${result.wrong}  ` +
+        `Missed: ${result.missed}  Extra: ${result.extra}`;
+
+      const diffEl = document.getElementById("word-diff-display");
+      diffEl.innerHTML = "";
+      result.word_diff.forEach((item) => {
+        const span = document.createElement("span");
+        span.className = `diff-word diff-${item.status}`;
+        if (item.status === "wrong") {
+          span.innerHTML = `${escapeHtml(item.word)} <s>${escapeHtml(item.typed)}</s>`;
+        } else if (item.status === "extra") {
+          span.innerHTML = `<s>${escapeHtml(item.word)}</s>`;
+        } else {
+          span.textContent = item.word;
+        }
+        diffEl.appendChild(span);
+        diffEl.appendChild(document.createTextNode(" "));
+      });
+    }
+
+    function viewPastAttempt(attempt) {
+      document.getElementById("best-last-display").textContent =
+        `Viewing attempt from ${formatDate(attempt.created_at)}`;
+      renderResult(attempt);
+      setState("RESULT");
+    }
+
+    async function loadAttemptsHistory() {
+      const listEl = document.getElementById("attempts-list");
+      listEl.innerHTML = spinnerHtml("Loading attempts…");
+      try {
+        const attempts = await apiGetAttempts(dictationId);
+        const bestLastEl = document.getElementById("best-last-display");
+        if (!attempts.length) {
+          listEl.textContent = "No attempts yet.";
+          bestLastEl.textContent = "";
+          return;
+        }
+        const bestAccuracy = Math.max(...attempts.map((a) => a.accuracy));
+        bestLastEl.textContent =
+          `Best: ${bestAccuracy}% · Last attempt: ${formatDate(attempts[0].created_at)}`;
+
+        listEl.innerHTML = "";
+        attempts.forEach((a) => {
+          const row = document.createElement("div");
+          row.className = "attempt-row";
+          const timeTaken =
+            a.time_taken_seconds != null ? `${a.time_taken_seconds}s` : "—";
+          row.innerHTML = `
+            <span>${formatDate(a.created_at)}</span>
+            <span>${a.accuracy}% &middot; ${timeTaken}</span>
+          `;
+          row.addEventListener("click", () => viewPastAttempt(a));
+          listEl.appendChild(row);
+        });
+      } catch (err) {
+        listEl.textContent = "Failed to load attempt history.";
+        showToast(err.message, "error");
+      }
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    document
+      .getElementById("start-test-btn")
+      .addEventListener("click", enterTesting);
+
+    document.getElementById("cancel-btn").addEventListener("click", () => {
+      if (confirm("Cancel this test? Your progress will be lost.")) {
+        enterListening();
+      }
+    });
+
+    document
+      .getElementById("submit-btn")
+      .addEventListener("click", () => handleSubmit(false));
+
+    document
+      .getElementById("try-again-btn")
+      .addEventListener("click", enterListening);
+    document.getElementById("home-btn").addEventListener("click", () => {
+      window.location.href = "index.html";
+    });
+
+    typedTextEl.addEventListener("paste", (e) => e.preventDefault());
+
+    window.addEventListener("beforeunload", (e) => {
+      if (currentState === "TESTING") {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    });
+
+    async function init() {
+      if (!dictationId) {
+        document.getElementById("dictation-title").textContent =
+          "No dictation selected.";
+        return;
+      }
+      try {
+        dictation = await apiGetDictation(dictationId);
+        document.getElementById("dictation-title").textContent = dictation.title;
+        enterListening();
+        loadAttemptsHistory();
+      } catch (err) {
+        document.getElementById("dictation-title").textContent =
+          "Failed to load dictation.";
+        showToast(err.message, "error");
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
