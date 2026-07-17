@@ -1,0 +1,227 @@
+/* Homepage-only design system — scoped under body.home so test.html and
+   config.html (which use styles.css's lighter, utilitarian look) are
+   untouched. */
+
+body.home {
+  --ink: #10222b;
+  --panel: #17313c;
+  --panel-hover: #1c3944;
+  --line: #274a55;
+  --line-bright: #3a6a76;
+  --paper: #f3ecdd;
+  --mute: #93a9ae;
+  --amber: #f2a93b;
+  --amber-dim: rgba(242, 169, 59, 0.14);
+  --coral: #e8623f;
+  --coral-dim: rgba(232, 98, 63, 0.16);
+
+  background: var(--ink);
+  color: var(--paper);
+  font-family: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+}
+
+body.home .home-wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+/* ---------- Masthead ---------- */
+
+body.home .masthead {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.6rem;
+}
+
+body.home .mark {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--amber-dim);
+  border: 1px solid var(--line-bright);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.home .mark svg .bar {
+  fill: var(--amber);
+  transform-origin: center bottom;
+  animation: bar-idle 2.4s ease-in-out infinite;
+}
+body.home .mark svg .bar:nth-child(1) { animation-delay: -0.9s; }
+body.home .mark svg .bar:nth-child(2) { animation-delay: -0.3s; }
+body.home .mark svg .bar:nth-child(3) { animation-delay: -1.5s; }
+body.home .mark svg .bar:nth-child(4) { animation-delay: -0.6s; }
+
+body.home h1 {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+  margin: 0;
+  line-height: 1.1;
+}
+
+body.home .tagline {
+  font-size: 0.98rem;
+  color: var(--mute);
+  margin: 0 0 2.2rem;
+  padding-left: 3.35rem;
+}
+
+/* ---------- Card grid ---------- */
+
+body.home .home-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+
+@media (max-width: 640px) {
+  body.home .home-grid {
+    grid-template-columns: 1fr;
+  }
+  body.home .tagline {
+    padding-left: 0;
+  }
+}
+
+body.home .status-line {
+  color: var(--mute);
+  grid-column: 1 / -1;
+  padding: 0.5rem 0;
+}
+
+body.home .spinner-row {
+  color: var(--mute);
+}
+
+body.home .spinner {
+  border-color: var(--line-bright);
+  border-top-color: var(--amber);
+}
+
+body.home .dict-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.15rem 1.25rem;
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+body.home .dict-card:hover,
+body.home .dict-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--amber);
+  background: var(--panel-hover);
+}
+
+body.home .dict-card:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+body.home .card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 0.7rem;
+}
+
+body.home .wave-icon {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: var(--amber-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.home .wave-icon svg .bar {
+  fill: var(--amber);
+  transform-origin: center bottom;
+  transform: scaleY(0.45);
+  transition: transform 0.2s ease;
+}
+
+body.home .dict-card:hover .wave-icon svg .bar,
+body.home .dict-card:focus-visible .wave-icon svg .bar {
+  animation: bar-idle 1.1s ease-in-out infinite;
+}
+body.home .wave-icon svg .bar:nth-child(1) { animation-delay: -0.7s; }
+body.home .wave-icon svg .bar:nth-child(2) { animation-delay: -0.2s; }
+body.home .wave-icon svg .bar:nth-child(3) { animation-delay: -0.9s; }
+body.home .wave-icon svg .bar:nth-child(4) { animation-delay: -0.4s; }
+
+body.home .dict-card h2 {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 1.02rem;
+  font-weight: 600;
+  margin: 0.15rem 0 0;
+  color: var(--paper);
+  line-height: 1.35;
+}
+
+body.home .badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.55rem;
+}
+
+body.home .badge {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-bright);
+  color: var(--mute);
+}
+
+body.home .badge.timed {
+  color: var(--coral);
+  border-color: var(--coral);
+  background: var(--coral-dim);
+}
+
+body.home .badge.untimed {
+  color: var(--amber);
+  border-color: var(--amber);
+  background: var(--amber-dim);
+}
+
+body.home .card-stats {
+  font-size: 0.85rem;
+  color: var(--mute);
+  margin: 0;
+}
+
+body.home .card-stats .accuracy {
+  color: var(--amber);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@keyframes bar-idle {
+  0%, 100% { transform: scaleY(0.45); }
+  50% { transform: scaleY(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.home .mark svg .bar,
+  body.home .dict-card:hover .wave-icon svg .bar,
+  body.home .dict-card:focus-visible .wave-icon svg .bar {
+    animation: none;
+  }
+  body.home .dict-card {
+    transition: none;
+  }
+}

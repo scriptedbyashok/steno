@@ -25,6 +25,7 @@ class DictationCard(BaseModel):
     attempt_count: int = 0
     best_accuracy: float | None = None
     last_attempt_at: datetime | None = None
+    word_count: int = 0
 
 
 class DictationDetail(DictationCard):

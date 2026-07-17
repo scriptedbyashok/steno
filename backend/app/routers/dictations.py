@@ -37,7 +37,7 @@ def _attempt_stats() -> dict[str, dict]:
 def _fetch_dictation_row(dictation_id: str) -> dict:
     rows = (
         supabase.table("dictations")
-        .select("id, title, time_limit_seconds, created_at, audio_path")
+        .select("id, title, time_limit_seconds, created_at, audio_path, transcript")
         .eq("id", dictation_id)
         .execute()
         .data
@@ -51,7 +51,7 @@ def _fetch_dictation_row(dictation_id: str) -> dict:
 def list_dictations():
     rows = (
         supabase.table("dictations")
-        .select("id, title, time_limit_seconds, created_at")
+        .select("id, title, time_limit_seconds, created_at, transcript")
         .order("created_at", desc=True)
         .execute()
         .data
@@ -59,7 +59,11 @@ def list_dictations():
     stats = _attempt_stats()
     return [
         DictationCard(
-            **row,
+            id=row["id"],
+            title=row["title"],
+            time_limit_seconds=row["time_limit_seconds"],
+            created_at=row["created_at"],
+            word_count=len(row["transcript"].split()),
             attempt_count=stats.get(row["id"], {}).get("count", 0),
             best_accuracy=stats.get(row["id"], {}).get("best_accuracy"),
             last_attempt_at=stats.get(row["id"], {}).get("last_attempt_at"),
@@ -85,6 +89,7 @@ def get_dictation(dictation_id: str):
         title=row["title"],
         time_limit_seconds=row["time_limit_seconds"],
         created_at=row["created_at"],
+        word_count=len(row["transcript"].split()),
         attempt_count=stats.get("count", 0),
         best_accuracy=stats.get("best_accuracy"),
         last_attempt_at=stats.get("last_attempt_at"),
