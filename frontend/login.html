@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Pacifico&family=Manrope:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;500;600;700&display=swap"
     rel="stylesheet"
   />
   <link rel="stylesheet" href="styles.css" />
@@ -17,7 +17,9 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      font-family: "Manrope", -apple-system, sans-serif;
+      background: #faf9f5;
+      color: #3d3929;
+      font-family: "Inter", -apple-system, sans-serif;
     }
     .login-card {
       width: 100%;
@@ -28,12 +30,41 @@
       text-align: center;
       font-family: "Pacifico", cursive;
       font-size: 2.4rem;
-      color: #2563eb;
+      color: #cc785c;
       margin-bottom: 1.5rem;
       text-decoration: none;
     }
+    .login-card .card {
+      background: #ffffff;
+      border: 1px solid #e5e1d8;
+      border-radius: 14px;
+      box-shadow: 0 1px 2px rgba(61, 57, 41, 0.06), 0 4px 16px rgba(61, 57, 41, 0.05);
+    }
+    .login-card label {
+      color: #3d3929;
+    }
+    .login-card input[type="text"],
+    .login-card input[type="password"] {
+      background: #faf9f5;
+      border: 1px solid #e5e1d8;
+      border-radius: 8px;
+      color: #3d3929;
+    }
+    .login-card input[type="text"]:focus,
+    .login-card input[type="password"]:focus {
+      outline: none;
+      border-color: #cc785c;
+      box-shadow: 0 0 0 3px rgba(204, 120, 92, 0.12);
+    }
     .login-card button {
       width: 100%;
+      background: #cc785c;
+      color: #fff;
+      font-weight: 600;
+      border-radius: 8px;
+    }
+    .login-card button:hover {
+      background: #b15e42;
     }
   </style>
 </head>

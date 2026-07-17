@@ -1,0 +1,367 @@
+/* ==========================================================================
+   Admin Theme — "Appian" enterprise dark-navy / red skin
+   Scoped entirely under body.admin-theme so it never leaks onto other pages.
+   Loaded after styles.css — relies on higher specificity, not !important,
+   wherever practical.
+   ========================================================================== */
+
+body.admin-theme {
+  --admin-bg: #12172b;
+  --admin-bg-alt: #0e1224;
+  --admin-card: #1b2138;
+  --admin-card-alt: #1e2440;
+  --admin-border: #2a3150;
+  --admin-border-soft: #242a48;
+  --admin-red: #e8394a;
+  --admin-red-hover: #f14b5c;
+  --admin-red-dark: #c41e3a;
+  --admin-red-dark-hover: #d92f4c;
+  --admin-text: #f0f1f5;
+  --admin-text-muted: #8b92a8;
+  --admin-text-dim: #626a85;
+
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Layout / typography                                                    */
+/* ---------------------------------------------------------------------- */
+
+body.admin-theme .container {
+  max-width: 720px;
+}
+
+body.admin-theme h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--admin-text);
+  margin-bottom: 1.25rem;
+}
+
+body.admin-theme .card {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+}
+
+body.admin-theme .card h2 {
+  color: var(--admin-text);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--admin-border);
+  padding-bottom: 0.65rem;
+  margin-bottom: 1rem !important;
+}
+
+body.admin-theme label {
+  color: var(--admin-text-muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+body.admin-theme input[type="text"],
+body.admin-theme input[type="email"],
+body.admin-theme input[type="password"],
+body.admin-theme input[type="number"],
+body.admin-theme input[type="file"],
+body.admin-theme select,
+body.admin-theme textarea {
+  background: var(--admin-bg-alt);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text);
+  border-radius: 6px;
+  font-family: inherit;
+}
+
+body.admin-theme input[type="text"]:focus,
+body.admin-theme input[type="email"]:focus,
+body.admin-theme input[type="password"]:focus,
+body.admin-theme input[type="number"]:focus,
+body.admin-theme select:focus,
+body.admin-theme textarea:focus {
+  outline: none;
+  border-color: var(--admin-red);
+  box-shadow: 0 0 0 3px rgba(232, 57, 74, 0.22);
+}
+
+body.admin-theme input::placeholder,
+body.admin-theme textarea::placeholder {
+  color: var(--admin-text-dim);
+}
+
+body.admin-theme .toggle-row label {
+  text-transform: none;
+  font-weight: 500;
+  color: var(--admin-text);
+}
+
+body.admin-theme .muted {
+  color: var(--admin-text-muted);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Buttons — the specific complaint                                       */
+/* ---------------------------------------------------------------------- */
+
+body.admin-theme button {
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: var(--admin-red);
+  color: #fff;
+  letter-spacing: 0.01em;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+}
+
+body.admin-theme button:hover {
+  background: var(--admin-red-hover);
+}
+
+body.admin-theme button:active {
+  transform: translateY(1px);
+}
+
+body.admin-theme button.secondary {
+  background: transparent;
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+}
+
+body.admin-theme button.secondary:hover {
+  background: var(--admin-card-alt);
+  border-color: var(--admin-text-dim);
+}
+
+body.admin-theme button.danger {
+  background: transparent;
+  color: #ff6b7a;
+  border: 1px solid var(--admin-red-dark);
+}
+
+body.admin-theme button.danger:hover {
+  background: var(--admin-red-dark);
+  color: #fff;
+}
+
+body.admin-theme button:disabled,
+body.admin-theme button:disabled:hover {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--admin-card-alt);
+  color: var(--admin-text-dim);
+  border-color: var(--admin-border);
+  box-shadow: none;
+  transform: none;
+}
+
+body.admin-theme #add-user-btn,
+body.admin-theme #upload-btn {
+  margin-top: 1.25rem;
+  padding: 0.7rem 1.5rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Navbar                                                                  */
+/* ---------------------------------------------------------------------- */
+
+body.admin-theme .navbar {
+  background: var(--admin-bg-alt);
+  border-bottom: 1px solid var(--admin-border);
+  padding: 0.85rem 1.5rem;
+}
+
+body.admin-theme .navbar .wordmark {
+  color: var(--admin-red);
+}
+
+body.admin-theme .navbar-links a {
+  color: var(--admin-text-muted);
+  font-size: 0.88rem;
+  padding: 0.35rem 0.15rem;
+  border-bottom: 2px solid transparent;
+}
+
+body.admin-theme .navbar-links a:hover {
+  color: var(--admin-text);
+}
+
+body.admin-theme .navbar-links a.active {
+  color: var(--admin-text);
+  border-bottom-color: var(--admin-red);
+}
+
+body.admin-theme .navbar-username {
+  color: var(--admin-text);
+}
+
+body.admin-theme .navbar-user button.secondary {
+  background: transparent;
+  color: var(--admin-text-muted);
+  border: 1px solid var(--admin-border);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+body.admin-theme .navbar-user button.secondary:hover {
+  background: var(--admin-card-alt);
+  color: var(--admin-text);
+  border-color: var(--admin-text-dim);
+}
+
+body.admin-theme .role-badge {
+  border-radius: 4px;
+  font-size: 0.68rem;
+}
+
+body.admin-theme .role-badge.role-admin {
+  background: rgba(232, 57, 74, 0.16);
+  color: #ff8b96;
+  border: 1px solid rgba(232, 57, 74, 0.35);
+}
+
+body.admin-theme .role-badge.role-user {
+  background: rgba(139, 146, 168, 0.14);
+  color: var(--admin-text-muted);
+  border: 1px solid var(--admin-border);
+}
+
+/* ---------------------------------------------------------------------- */
+/* User list / rows                                                       */
+/* ---------------------------------------------------------------------- */
+
+body.admin-theme #user-list {
+  color: var(--admin-text-muted);
+}
+
+body.admin-theme .user-row {
+  padding: 0.9rem 0.25rem;
+  border-bottom: 1px solid var(--admin-border-soft);
+  border-radius: 6px;
+  transition: background 0.12s ease;
+}
+
+body.admin-theme .user-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+body.admin-theme .user-row:last-child {
+  border-bottom: none;
+}
+
+body.admin-theme .user-row-main {
+  gap: 0.75rem;
+}
+
+body.admin-theme .user-row-name {
+  color: var(--admin-text);
+  font-weight: 600;
+}
+
+body.admin-theme .user-row-username {
+  color: var(--admin-text-muted);
+  font-family: "IBM Plex Sans", "Inter", monospace;
+}
+
+body.admin-theme .user-row-actions button {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+}
+
+body.admin-theme .edit-form {
+  background: var(--admin-bg-alt);
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+}
+
+body.admin-theme .edit-form label {
+  margin-top: 0.75rem;
+}
+
+body.admin-theme .edit-form label:first-child {
+  margin-top: 0;
+}
+
+body.admin-theme .edit-form button {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Dictation list / rows (config.html)                                    */
+/* ---------------------------------------------------------------------- */
+
+body.admin-theme #dictation-list {
+  color: var(--admin-text-muted);
+}
+
+body.admin-theme .dictation-row {
+  padding: 0.8rem 0.25rem;
+  border-bottom: 1px solid var(--admin-border-soft);
+  border-radius: 6px;
+  transition: background 0.12s ease;
+}
+
+body.admin-theme .dictation-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+body.admin-theme .dictation-row:last-child {
+  border-bottom: none;
+}
+
+body.admin-theme .dictation-row span {
+  color: var(--admin-text);
+  font-weight: 500;
+}
+
+body.admin-theme .dictation-row button {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Toasts — keep legible on dark background                               */
+/* ---------------------------------------------------------------------- */
+
+body.admin-theme .toast {
+  background: var(--admin-card-alt);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text);
+}
+
+body.admin-theme .toast-error {
+  background: var(--admin-red-dark);
+  border-color: var(--admin-red-dark);
+}
+
+body.admin-theme .toast-success {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Spinner                                                                 */
+/* ---------------------------------------------------------------------- */
+
+body.admin-theme .spinner-row {
+  color: var(--admin-text-muted);
+}
+
+body.admin-theme .spinner {
+  border-color: var(--admin-border);
+  border-top-color: var(--admin-red);
+}
