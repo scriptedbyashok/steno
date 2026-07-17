@@ -107,39 +107,202 @@
       const listEl = document.getElementById("dictation-list");
       listEl.innerHTML = spinnerHtml("Loading dictations…");
       try {
-        const dictations = await apiGetDictations();
-        if (!dictations.length) {
-          listEl.textContent = "No dictations yet.";
-          return;
-        }
-        listEl.innerHTML = "";
-        dictations.forEach((d) => {
-          const row = document.createElement("div");
-          row.className = "dictation-row";
-          row.innerHTML = `<span>${d.title}</span>`;
-          const delBtn = document.createElement("button");
-          delBtn.className = "danger";
-          delBtn.textContent = "Delete";
-          delBtn.style.marginTop = "0";
-          delBtn.addEventListener("click", () => deleteDictation(d.id, d.title));
-          row.appendChild(delBtn);
-          listEl.appendChild(row);
-        });
+        const dictations = await apiGetAdminDictations();
+        renderDictationList(dictations);
       } catch (err) {
         listEl.textContent = "Failed to load dictations.";
         showToast(err.message, "error");
       }
     }
 
-    async function deleteDictation(id, title) {
-      if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
-      try {
-        await apiDeleteDictation(id);
-        showToast("Deleted", "success");
-        loadDictationList();
-      } catch (err) {
-        showToast(err.message, "error");
+    function renderDictationList(dictations) {
+      const listEl = document.getElementById("dictation-list");
+      if (!dictations.length) {
+        listEl.textContent = "No dictations yet.";
+        return;
       }
+      listEl.innerHTML = "";
+      dictations.forEach((d) => {
+        const row = document.createElement("div");
+        row.className = "dictation-row";
+        if (d.deleted_at) row.classList.add("dictation-row-deleted");
+
+        row.innerHTML = `
+          <div class="dictation-row-main">
+            <span>${escapeHtml(d.title)}</span>
+            ${d.deleted_at ? '<span class="deleted-badge">Deleted</span>' : ""}
+            <span class="muted dictation-row-stats">${d.word_count} words · ${d.attempt_count} attempt${d.attempt_count === 1 ? "" : "s"}</span>
+          </div>
+          <div class="dictation-row-actions">
+            ${
+              d.deleted_at
+                ? `<button class="secondary restore-btn" type="button">Restore</button>
+                   <button class="danger delete-permanent-btn" type="button">Delete Permanently</button>`
+                : `<button class="secondary edit-btn" type="button">Edit</button>
+                   <button class="danger delete-btn" type="button">Delete</button>`
+            }
+          </div>
+          <div class="edit-form" style="display: none"></div>
+          <div class="delete-confirm-panel" style="display: none">
+            <label class="delete-confirm-checkbox-row">
+              <input type="checkbox" class="permanent-checkbox" />
+              Permanently delete (cannot be undone)
+            </label>
+            <div class="delete-confirm-actions">
+              <button type="button" class="danger confirm-delete-btn">Confirm Delete</button>
+              <button type="button" class="secondary cancel-delete-btn">Cancel</button>
+            </div>
+          </div>
+        `;
+
+        if (!d.deleted_at) {
+          const editForm = row.querySelector(".edit-form");
+          row.querySelector(".edit-btn").addEventListener("click", async () => {
+            if (editForm.style.display === "block") {
+              editForm.style.display = "none";
+              return;
+            }
+            editForm.style.display = "block";
+            editForm.innerHTML = spinnerHtml("Loading…");
+            try {
+              const detail = await apiGetAdminDictation(d.id);
+              renderEditForm(editForm, detail);
+            } catch (err) {
+              editForm.style.display = "none";
+              showToast(err.message, "error");
+            }
+          });
+
+          const deletePanel = row.querySelector(".delete-confirm-panel");
+          const actionsEl = row.querySelector(".dictation-row-actions");
+          row.querySelector(".delete-btn").addEventListener("click", () => {
+            actionsEl.style.display = "none";
+            deletePanel.style.display = "block";
+          });
+          row.querySelector(".cancel-delete-btn").addEventListener("click", () => {
+            deletePanel.style.display = "none";
+            actionsEl.style.display = "flex";
+            row.querySelector(".permanent-checkbox").checked = false;
+          });
+          row.querySelector(".confirm-delete-btn").addEventListener("click", async () => {
+            const permanent = row.querySelector(".permanent-checkbox").checked;
+            try {
+              await apiDeleteDictation(d.id, permanent);
+              showToast(
+                permanent ? "Dictation permanently deleted" : "Dictation deleted",
+                "success"
+              );
+              loadDictationList();
+            } catch (err) {
+              showToast(err.message, "error");
+            }
+          });
+        } else {
+          row.querySelector(".restore-btn").addEventListener("click", async () => {
+            try {
+              await apiRestoreDictation(d.id);
+              showToast("Dictation restored", "success");
+              loadDictationList();
+            } catch (err) {
+              showToast(err.message, "error");
+            }
+          });
+          row.querySelector(".delete-permanent-btn").addEventListener("click", async () => {
+            if (
+              !confirm(
+                "Permanently delete this dictation and its audio file? This cannot be undone."
+              )
+            )
+              return;
+            try {
+              await apiDeleteDictation(d.id, true);
+              showToast("Dictation permanently deleted", "success");
+              loadDictationList();
+            } catch (err) {
+              showToast(err.message, "error");
+            }
+          });
+        }
+
+        listEl.appendChild(row);
+      });
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function renderEditForm(editForm, detail) {
+      const isTimed = !!detail.time_limit_seconds;
+      editForm.innerHTML = `
+        <label>Title</label>
+        <input type="text" class="edit-dictation-title" value="${escapeHtml(detail.title)}" />
+
+        <label>Transcript</label>
+        <textarea class="edit-dictation-transcript">${escapeHtml(detail.transcript)}</textarea>
+
+        <div class="toggle-row">
+          <input type="checkbox" class="edit-timed-toggle" ${isTimed ? "checked" : ""} />
+          <label>Timed test?</label>
+        </div>
+        <div class="edit-time-limit-wrap" style="display: ${isTimed ? "block" : "none"}">
+          <label>Time limit (seconds)</label>
+          <input type="number" class="edit-time-limit" min="1" value="${
+            detail.time_limit_seconds || ""
+          }" />
+        </div>
+
+        <label>Replace audio (leave blank to keep current)</label>
+        <input type="file" class="edit-audio" accept=".mp3,.wav,.m4a" />
+
+        <button type="button" class="save-edit-btn">Save</button>
+        <button type="button" class="secondary cancel-edit-btn">Cancel</button>
+      `;
+
+      editForm
+        .querySelector(".edit-timed-toggle")
+        .addEventListener("change", (e) => {
+          editForm.querySelector(".edit-time-limit-wrap").style.display = e.target
+            .checked
+            ? "block"
+            : "none";
+        });
+
+      editForm.querySelector(".cancel-edit-btn").addEventListener("click", () => {
+        editForm.style.display = "none";
+      });
+
+      editForm.querySelector(".save-edit-btn").addEventListener("click", async () => {
+        const title = editForm.querySelector(".edit-dictation-title").value.trim();
+        const transcript = editForm
+          .querySelector(".edit-dictation-transcript")
+          .value.trim();
+        const isTimedNow = editForm.querySelector(".edit-timed-toggle").checked;
+        const timeLimit = editForm.querySelector(".edit-time-limit").value;
+        const fileInput = editForm.querySelector(".edit-audio");
+
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("transcript", transcript);
+        if (isTimedNow && timeLimit) {
+          formData.append("time_limit_seconds", timeLimit);
+        } else if (!isTimedNow) {
+          formData.append("clear_time_limit", "true");
+        }
+        if (fileInput.files.length) {
+          formData.append("audio", fileInput.files[0]);
+        }
+
+        try {
+          await apiUpdateDictation(detail.id, formData);
+          showToast("Dictation updated", "success");
+          loadDictationList();
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
     }
 
     init();

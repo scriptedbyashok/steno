@@ -144,15 +144,60 @@ async function apiUploadDictation(formData) {
   return data;
 }
 
-async function apiDeleteDictation(id) {
+async function apiDeleteDictation(id, permanent = false) {
   const res = await fetchWithColdStartRetry(
-    `${API_BASE_URL}/api/admin/dictations/${id}`,
+    `${API_BASE_URL}/api/admin/dictations/${id}?permanent=${permanent}`,
     { method: "DELETE", headers: authHeaders() }
   );
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
     throw new Error(data.detail || "Delete failed");
   }
+}
+
+async function apiGetAdminDictations() {
+  const res = await fetchWithColdStartRetry(
+    `${API_BASE_URL}/api/admin/dictations`,
+    { headers: authHeaders() }
+  );
+  if (!res.ok) throw new Error("Failed to load dictations");
+  return res.json();
+}
+
+async function apiGetAdminDictation(id) {
+  const res = await fetchWithColdStartRetry(
+    `${API_BASE_URL}/api/admin/dictations/${id}`,
+    { headers: authHeaders() }
+  );
+  if (!res.ok) throw new Error("Failed to load dictation");
+  return res.json();
+}
+
+async function apiUpdateDictation(id, formData) {
+  const res = await fetchWithColdStartRetry(
+    `${API_BASE_URL}/api/admin/dictations/${id}`,
+    {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: formData,
+    }
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || "Failed to update dictation");
+  return data;
+}
+
+async function apiRestoreDictation(id) {
+  const res = await fetchWithColdStartRetry(
+    `${API_BASE_URL}/api/admin/dictations/${id}/restore`,
+    {
+      method: "POST",
+      headers: authHeaders(),
+    }
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || "Failed to restore dictation");
+  return data;
 }
 
 async function apiListUsers() {

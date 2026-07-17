@@ -42,6 +42,7 @@ def _fetch_dictation_row(dictation_id: str) -> dict:
         supabase.table("dictations")
         .select("id, title, time_limit_seconds, created_at, audio_path, transcript")
         .eq("id", dictation_id)
+        .is_("deleted_at", "null")
         .execute()
         .data
     )
@@ -55,6 +56,7 @@ def list_dictations(user: dict = Depends(get_current_user)):
     rows = (
         supabase.table("dictations")
         .select("id, title, time_limit_seconds, created_at, transcript")
+        .is_("deleted_at", "null")
         .order("created_at", desc=True)
         .execute()
         .data
@@ -108,6 +110,7 @@ def submit_attempt(
         supabase.table("dictations")
         .select("transcript")
         .eq("id", dictation_id)
+        .is_("deleted_at", "null")
         .execute()
         .data
     )

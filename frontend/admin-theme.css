@@ -333,6 +333,92 @@ body.admin-theme .dictation-row button {
   font-size: 0.8rem;
 }
 
+body.admin-theme .dictation-row-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+body.admin-theme .dictation-row-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+body.admin-theme .dictation-row-stats {
+  font-size: 0.8rem;
+}
+
+body.admin-theme .dictation-row-deleted {
+  opacity: 0.6;
+}
+
+body.admin-theme .dictation-row-deleted .dictation-row-main > span:first-child {
+  text-decoration: line-through;
+  color: var(--admin-text-dim);
+}
+
+body.admin-theme .deleted-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(139, 146, 168, 0.14);
+  color: var(--admin-text-muted);
+  border: 1px solid var(--admin-border);
+}
+
+body.admin-theme .dictation-row .edit-form {
+  margin-top: 0.75rem;
+}
+
+body.admin-theme .dictation-row .edit-form:empty {
+  display: none !important;
+}
+
+body.admin-theme .delete-confirm-panel {
+  margin-top: 0.75rem;
+  background: rgba(232, 57, 74, 0.06);
+  border: 1px solid var(--admin-red-dark);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+}
+
+body.admin-theme .delete-confirm-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: none;
+  font-weight: 500;
+  color: var(--admin-text);
+}
+
+body.admin-theme .delete-confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+body.admin-theme .delete-confirm-actions button {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+body.admin-theme .restore-btn {
+  background: transparent;
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+}
+
+body.admin-theme .restore-btn:hover {
+  background: var(--admin-card-alt);
+  border-color: var(--admin-text-dim);
+}
+
 /* ---------------------------------------------------------------------- */
 /* Ranking list / rows (ranking.html)                                     */
 /* ---------------------------------------------------------------------- */

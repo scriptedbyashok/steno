@@ -137,3 +137,22 @@ class DictationRanking(BaseModel):
     top_accuracy: float | None = None
     participant_count: int
     attempt_count: int
+
+
+class AdminDictationCard(BaseModel):
+    id: UUID
+    title: str
+    time_limit_seconds: int | None = None
+    created_at: datetime
+    deleted_at: datetime | None = None
+    word_count: int
+    attempt_count: int
+
+
+class AdminDictationDetail(BaseModel):
+    id: UUID
+    title: str
+    transcript: str
+    time_limit_seconds: int | None = None
+    created_at: datetime
+    deleted_at: datetime | None = None

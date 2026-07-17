@@ -31,6 +31,7 @@ def get_dictation_ranking(
         supabase.table("dictations")
         .select("id")
         .eq("id", dictation_id)
+        .is_("deleted_at", "null")
         .execute()
         .data
     )
@@ -68,6 +69,7 @@ def get_admin_rankings(user: dict = Depends(require_admin)):
     dictation_rows = (
         supabase.table("dictations")
         .select("id, title, created_at")
+        .is_("deleted_at", "null")
         .order("created_at", desc=True)
         .execute()
         .data
