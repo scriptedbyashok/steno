@@ -4,6 +4,41 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+Role = Literal["admin", "user"]
+
+
+class UserPublic(BaseModel):
+    """User shape safe to send to the browser — excludes password_hash."""
+
+    id: UUID
+    username: str
+    display_name: str
+    role: Role
+    created_at: datetime
+
+
+class UserCreate(BaseModel):
+    username: str
+    display_name: str
+    password: str
+    role: Role
+
+
+class UserUpdate(BaseModel):
+    display_name: str | None = None
+    role: Role | None = None
+    password: str | None = None
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    user: UserPublic
+
 
 class Dictation(BaseModel):
     id: UUID

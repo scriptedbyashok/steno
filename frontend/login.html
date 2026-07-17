@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Steno</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Pacifico&family=Manrope:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body.login-page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: "Manrope", -apple-system, sans-serif;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 360px;
+    }
+    .login-wordmark {
+      display: block;
+      text-align: center;
+      font-family: "Pacifico", cursive;
+      font-size: 2.4rem;
+      color: #2563eb;
+      margin-bottom: 1.5rem;
+      text-decoration: none;
+    }
+    .login-card button {
+      width: 100%;
+    }
+  </style>
+</head>
+<body class="login-page">
+  <div class="login-card">
+    <a href="login.html" class="login-wordmark">Steno</a>
+    <div class="card">
+      <label for="login-username">Username</label>
+      <input type="text" id="login-username" autocomplete="username" />
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" autocomplete="current-password" />
+      <button id="login-btn">Log In</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="api.js"></script>
+  <script>
+    if (getToken()) {
+      window.location.href = "index.html";
+    }
+
+    async function doLogin() {
+      const btn = document.getElementById("login-btn");
+      const username = document.getElementById("login-username").value.trim();
+      const password = document.getElementById("login-password").value;
+      if (!username || !password) {
+        showToast("Enter username and password", "error");
+        return;
+      }
+      setLoading(btn, true);
+      try {
+        const { access_token, user } = await apiLogin(username, password);
+        setSession(access_token, user);
+        window.location.href = "index.html";
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        setLoading(btn, false);
+      }
+    }
+
+    document.getElementById("login-btn").addEventListener("click", doLogin);
+    document.getElementById("login-password").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") doLogin();
+    });
+  </script>
+</body>
+</html>

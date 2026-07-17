@@ -27,6 +27,49 @@ body.home .home-wrap {
   padding: 2.5rem 1.25rem 4rem;
 }
 
+/* ---------- Navbar (dark override) ---------- */
+
+body.home .navbar {
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+body.home .navbar .wordmark {
+  color: var(--amber);
+}
+
+body.home .navbar-links a {
+  color: var(--mute);
+}
+
+body.home .navbar-links a:hover,
+body.home .navbar-links a.active {
+  color: var(--amber);
+}
+
+body.home .navbar-username {
+  color: var(--paper);
+}
+
+body.home .navbar-user button.secondary {
+  background: var(--line);
+  color: var(--paper);
+}
+
+body.home .navbar-user button.secondary:hover {
+  background: var(--line-bright);
+}
+
+body.home .role-badge.role-admin {
+  background: var(--amber-dim);
+  color: var(--amber);
+}
+
+body.home .role-badge.role-user {
+  background: rgba(147, 169, 174, 0.18);
+  color: var(--mute);
+}
+
 /* ---------- Masthead ---------- */
 
 body.home .masthead {

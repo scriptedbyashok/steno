@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Users — Steno</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Pacifico&family=Manrope:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header id="navbar-root" class="navbar"></header>
+
+  <div class="container">
+    <h1>User Management</h1>
+
+    <section class="card">
+      <h2 style="margin-top: 0">Add User</h2>
+      <form id="add-user-form">
+        <label for="new-username">Username</label>
+        <input type="text" id="new-username" required autocomplete="off" />
+
+        <label for="new-display-name">Display name</label>
+        <input type="text" id="new-display-name" required autocomplete="off" />
+
+        <label for="new-password">Password</label>
+        <input type="text" id="new-password" required autocomplete="off" />
+
+        <label for="new-role">Role</label>
+        <select id="new-role">
+          <option value="user">user</option>
+          <option value="admin">admin</option>
+        </select>
+
+        <button type="submit" id="add-user-btn">Add User</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top: 0">Existing Users</h2>
+      <div id="user-list">Loading…</div>
+    </section>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="api.js"></script>
+  <script>
+    let currentUser = null;
+    let editingUserId = null;
+
+    async function init() {
+      currentUser = await requireAuth({ adminOnly: true });
+      if (!currentUser) return;
+      renderNavbar(currentUser, "admin");
+      loadUsers();
+    }
+
+    async function loadUsers() {
+      const listEl = document.getElementById("user-list");
+      listEl.innerHTML = spinnerHtml("Loading users…");
+      try {
+        const users = await apiListUsers();
+        renderUserList(users);
+      } catch (err) {
+        listEl.textContent = "Failed to load users.";
+        showToast(err.message, "error");
+      }
+    }
+
+    function renderUserList(users) {
+      const listEl = document.getElementById("user-list");
+      if (!users.length) {
+        listEl.textContent = "No users yet.";
+        return;
+      }
+      listEl.innerHTML = "";
+      users.forEach((u) => {
+        const row = document.createElement("div");
+        row.className = "user-row";
+        const isSelf = u.id === currentUser.id;
+
+        row.innerHTML = `
+          <div class="user-row-main">
+            <span class="user-row-name">${u.display_name}</span>
+            <span class="user-row-username">@${u.username}</span>
+            <span class="role-badge role-${u.role}">${u.role}</span>
+            <span class="muted">${formatDate(u.created_at)}</span>
+          </div>
+          <div class="user-row-actions">
+            <button class="secondary edit-btn" type="button">Edit</button>
+            <button class="danger delete-btn" type="button" ${isSelf ? "disabled title=\"You can't delete your own account\"" : ""}>Delete</button>
+          </div>
+          <form class="edit-form" style="display: none">
+            <label>Display name</label>
+            <input type="text" class="edit-display-name" value="${u.display_name}" />
+            <label>Role</label>
+            <select class="edit-role">
+              <option value="user" ${u.role === "user" ? "selected" : ""}>user</option>
+              <option value="admin" ${u.role === "admin" ? "selected" : ""}>admin</option>
+            </select>
+            <label>New password (leave blank to keep unchanged)</label>
+            <input type="text" class="edit-password" autocomplete="off" />
+            <button type="submit">Save</button>
+            <button type="button" class="secondary cancel-edit-btn">Cancel</button>
+          </form>
+        `;
+
+        const editForm = row.querySelector(".edit-form");
+        row.querySelector(".edit-btn").addEventListener("click", () => {
+          editForm.style.display =
+            editForm.style.display === "none" ? "block" : "none";
+        });
+        row.querySelector(".cancel-edit-btn").addEventListener("click", () => {
+          editForm.style.display = "none";
+        });
+        editForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const body = {
+            display_name: row.querySelector(".edit-display-name").value.trim(),
+            role: row.querySelector(".edit-role").value,
+          };
+          const password = row.querySelector(".edit-password").value;
+          if (password) body.password = password;
+          try {
+            await apiUpdateUser(u.id, body);
+            showToast("User updated", "success");
+            loadUsers();
+          } catch (err) {
+            showToast(err.message, "error");
+          }
+        });
+
+        if (!isSelf) {
+          row.querySelector(".delete-btn").addEventListener("click", async () => {
+            if (!confirm(`Delete user "${u.username}"? This cannot be undone.`))
+              return;
+            try {
+              await apiDeleteUser(u.id);
+              showToast("User deleted", "success");
+              loadUsers();
+            } catch (err) {
+              showToast(err.message, "error");
+            }
+          });
+        }
+
+        listEl.appendChild(row);
+      });
+    }
+
+    document.getElementById("add-user-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("add-user-btn");
+      const body = {
+        username: document.getElementById("new-username").value.trim(),
+        display_name: document.getElementById("new-display-name").value.trim(),
+        password: document.getElementById("new-password").value,
+        role: document.getElementById("new-role").value,
+      };
+      setLoading(btn, true);
+      try {
+        await apiCreateUser(body);
+        showToast("User created", "success");
+        e.target.reset();
+        loadUsers();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>

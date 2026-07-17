@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from .routers import admin, attempts, dictations
+from .routers import admin, attempts, auth, dictations, users
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
@@ -17,6 +17,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
+app.include_router(users.router)
 app.include_router(dictations.router)
 app.include_router(attempts.router)
 app.include_router(admin.router)

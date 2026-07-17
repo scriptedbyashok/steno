@@ -33,3 +33,57 @@ function formatDate(isoString) {
     timeStyle: "short",
   });
 }
+
+/**
+ * Gate a page behind login (and optionally the admin role). Redirects and
+ * returns null if the check fails; otherwise returns the current user.
+ * Every protected page should `await requireAuth()` before doing anything else.
+ */
+async function requireAuth({ adminOnly = false } = {}) {
+  const token = getToken();
+  if (!token) {
+    window.location.href = "login.html";
+    return null;
+  }
+  try {
+    const user = await apiGetMe();
+    setSession(token, user);
+    if (adminOnly && user.role !== "admin") {
+      window.location.href = "index.html";
+      return null;
+    }
+    return user;
+  } catch (err) {
+    clearSession();
+    window.location.href = "login.html";
+    return null;
+  }
+}
+
+function renderNavbar(user, activePage) {
+  const root = document.getElementById("navbar-root");
+  if (!root) return;
+
+  const adminLinks =
+    user.role === "admin"
+      ? `<a href="admin.html" class="${activePage === "admin" ? "active" : ""}">Users</a>
+         <a href="config.html" class="${activePage === "config" ? "active" : ""}">Upload</a>`
+      : "";
+
+  root.innerHTML = `
+    <a href="index.html" class="wordmark">Steno</a>
+    <nav class="navbar-links">
+      <a href="index.html" class="${activePage === "home" ? "active" : ""}">Home</a>
+      ${adminLinks}
+    </nav>
+    <div class="navbar-user">
+      <span class="navbar-username">${user.display_name}</span>
+      <span class="role-badge role-${user.role}">${user.role}</span>
+      <button id="navbar-logout" class="secondary">Log Out</button>
+    </div>
+  `;
+  document.getElementById("navbar-logout").addEventListener("click", () => {
+    clearSession();
+    window.location.href = "login.html";
+  });
+}

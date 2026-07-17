@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from ..auth import get_current_user
 from ..db import supabase
 from ..diff import diff_words
 from ..models import DictationCard, DictationDetail, SubmitRequest, SubmitResponse
@@ -10,10 +11,12 @@ AUDIO_BUCKET = "dictation-audio"
 SIGNED_URL_TTL_SECONDS = 3600
 
 
-def _attempt_stats() -> dict[str, dict]:
+def _attempt_stats(user_id: str) -> dict[str, dict]:
+    """Per-user attempt stats — each user only sees their own history."""
     rows = (
         supabase.table("attempts")
         .select("dictation_id, accuracy, created_at")
+        .eq("user_id", user_id)
         .execute()
         .data
     )
@@ -48,7 +51,7 @@ def _fetch_dictation_row(dictation_id: str) -> dict:
 
 
 @router.get("", response_model=list[DictationCard])
-def list_dictations():
+def list_dictations(user: dict = Depends(get_current_user)):
     rows = (
         supabase.table("dictations")
         .select("id, title, time_limit_seconds, created_at, transcript")
@@ -56,7 +59,7 @@ def list_dictations():
         .execute()
         .data
     )
-    stats = _attempt_stats()
+    stats = _attempt_stats(user["id"])
     return [
         DictationCard(
             id=row["id"],
@@ -73,7 +76,7 @@ def list_dictations():
 
 
 @router.get("/{dictation_id}", response_model=DictationDetail)
-def get_dictation(dictation_id: str):
+def get_dictation(dictation_id: str, user: dict = Depends(get_current_user)):
     row = _fetch_dictation_row(dictation_id)
 
     signed = supabase.storage.from_(AUDIO_BUCKET).create_signed_url(
@@ -83,7 +86,7 @@ def get_dictation(dictation_id: str):
     if not audio_url:
         raise HTTPException(status_code=500, detail="Failed to sign audio URL")
 
-    stats = _attempt_stats().get(row["id"], {})
+    stats = _attempt_stats(user["id"]).get(row["id"], {})
     return DictationDetail(
         id=row["id"],
         title=row["title"],
@@ -98,7 +101,9 @@ def get_dictation(dictation_id: str):
 
 
 @router.post("/{dictation_id}/submit", response_model=SubmitResponse)
-def submit_attempt(dictation_id: str, body: SubmitRequest):
+def submit_attempt(
+    dictation_id: str, body: SubmitRequest, user: dict = Depends(get_current_user)
+):
     rows = (
         supabase.table("dictations")
         .select("transcript")
@@ -115,6 +120,7 @@ def submit_attempt(dictation_id: str, body: SubmitRequest):
     supabase.table("attempts").insert(
         {
             "dictation_id": dictation_id,
+            "user_id": user["id"],
             "typed_text": body.typed_text,
             "accuracy": result["accuracy"],
             "total_words": result["total_words"],
