@@ -59,6 +59,17 @@ async function apiGetMe() {
   return res.json();
 }
 
+async function apiUpdateMyName(displayName) {
+  const res = await fetchWithColdStartRetry(`${API_BASE_URL}/api/auth/me`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ display_name: displayName }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || "Failed to update name");
+  return data;
+}
+
 async function apiGetDictations() {
   const res = await fetchWithColdStartRetry(`${API_BASE_URL}/api/dictations`, {
     headers: authHeaders(),

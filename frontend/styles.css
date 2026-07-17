@@ -296,6 +296,12 @@ details.attempts-history summary {
   line-height: 1;
 }
 
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+}
+
 .navbar-links {
   display: flex;
   gap: 1rem;
@@ -323,6 +329,11 @@ details.attempts-history summary {
 .navbar-username {
   font-weight: 600;
   font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.navbar-username:hover {
+  text-decoration: underline;
 }
 
 .navbar-user button {

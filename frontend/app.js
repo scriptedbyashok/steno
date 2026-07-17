@@ -71,13 +71,15 @@ function renderNavbar(user, activePage) {
       : "";
 
   root.innerHTML = `
-    <a href="index.html" class="wordmark">Steno</a>
-    <nav class="navbar-links">
-      <a href="index.html" class="${activePage === "home" ? "active" : ""}">Home</a>
-      ${adminLinks}
-    </nav>
+    <div class="navbar-left">
+      <a href="index.html" class="wordmark">Steno</a>
+      <nav class="navbar-links">
+        <a href="index.html" class="${activePage === "home" ? "active" : ""}">Home</a>
+        ${adminLinks}
+      </nav>
+    </div>
     <div class="navbar-user">
-      <span class="navbar-username">${user.display_name}</span>
+      <span class="navbar-username" title="Click to edit your display name">${user.display_name}</span>
       <span class="role-badge role-${user.role}">${user.role}</span>
       <button id="navbar-logout" class="secondary">Log Out</button>
     </div>
@@ -85,5 +87,22 @@ function renderNavbar(user, activePage) {
   document.getElementById("navbar-logout").addEventListener("click", () => {
     clearSession();
     window.location.href = "login.html";
+  });
+
+  const usernameEl = root.querySelector(".navbar-username");
+  usernameEl.addEventListener("click", async () => {
+    const currentName = usernameEl.textContent;
+    const newName = prompt("Update your display name:", currentName);
+    if (newName === null) return;
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === currentName) return;
+    try {
+      const updatedUser = await apiUpdateMyName(trimmed);
+      setSession(getToken(), updatedUser);
+      usernameEl.textContent = updatedUser.display_name;
+      showToast("Name updated", "success");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   });
 }

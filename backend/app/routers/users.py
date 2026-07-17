@@ -56,6 +56,18 @@ def update_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     updates: dict = {}
+    if body.username is not None:
+        conflict = (
+            supabase.table("users")
+            .select("id")
+            .eq("username", body.username)
+            .neq("id", user_id)
+            .execute()
+            .data
+        )
+        if conflict:
+            raise HTTPException(status_code=409, detail="Username already exists")
+        updates["username"] = body.username
     if body.display_name is not None:
         updates["display_name"] = body.display_name
     if body.role is not None:
