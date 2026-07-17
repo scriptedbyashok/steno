@@ -46,6 +46,13 @@
     </section>
 
     <section class="card">
+      <details class="ranking-section" id="ranking-section" open>
+        <summary>Ranking</summary>
+        <div id="ranking-list">Loading…</div>
+      </details>
+    </section>
+
+    <section class="card">
       <details class="attempts-history" id="attempts-history">
         <summary>Attempt History</summary>
         <div id="attempts-list">Loading…</div>
@@ -213,6 +220,44 @@
       }
     }
 
+    function rankLabel(rank) {
+      if (rank === 1) return "🥇 #1";
+      if (rank === 2) return "🥈 #2";
+      if (rank === 3) return "🥉 #3";
+      return `#${rank}`;
+    }
+
+    async function loadRanking() {
+      const listEl = document.getElementById("ranking-list");
+      listEl.innerHTML = spinnerHtml("Loading ranking…");
+      try {
+        const ranking = await apiGetRanking(dictationId);
+        if (!ranking.length) {
+          listEl.textContent = "No attempts yet — be the first!";
+          return;
+        }
+        const currentUser = getStoredUser();
+        listEl.innerHTML = "";
+        ranking.forEach((entry) => {
+          const row = document.createElement("div");
+          const isMe = currentUser && entry.user_id === currentUser.id;
+          row.className = "ranking-row" + (isMe ? " ranking-row-me" : "");
+          if (entry.rank <= 3) row.classList.add("ranking-row-top3");
+          const timeTaken =
+            entry.time_taken_seconds != null ? `${entry.time_taken_seconds}s` : "—";
+          row.innerHTML = `
+            <span class="ranking-rank">${rankLabel(entry.rank)}</span>
+            <span class="ranking-name">${escapeHtml(entry.display_name)}</span>
+            <span class="ranking-stats">${entry.accuracy}% &middot; ${timeTaken}</span>
+          `;
+          listEl.appendChild(row);
+        });
+      } catch (err) {
+        listEl.textContent = "Failed to load ranking.";
+        showToast(err.message, "error");
+      }
+    }
+
     function escapeHtml(str) {
       const div = document.createElement("div");
       div.textContent = str;
@@ -264,6 +309,7 @@
         document.getElementById("dictation-title").textContent = dictation.title;
         enterListening();
         loadAttemptsHistory();
+        loadRanking();
       } catch (err) {
         document.getElementById("dictation-title").textContent =
           "Failed to load dictation.";

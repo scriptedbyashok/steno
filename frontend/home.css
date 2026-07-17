@@ -407,6 +407,60 @@ body.home .attempt-row:hover {
   background: var(--panel-hover);
 }
 
+body.home details.ranking-section summary {
+  color: var(--ink);
+}
+
+body.home .ranking-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.15rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+
+body.home .ranking-row:last-child {
+  border-bottom: none;
+}
+
+body.home .ranking-rank {
+  flex: none;
+  min-width: 3rem;
+  font-family: "SFMono-Regular", ui-monospace, Menlo, monospace;
+  font-size: 0.85rem;
+  color: var(--mute);
+}
+
+body.home .ranking-name {
+  flex: 1;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+body.home .ranking-stats {
+  flex: none;
+  font-size: 0.85rem;
+  color: var(--mute);
+}
+
+body.home .ranking-row-top3 .ranking-rank {
+  color: var(--clay-dark);
+  font-weight: 600;
+}
+
+body.home .ranking-row-me {
+  background: var(--clay-dim);
+  border-radius: 8px;
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
+  border-bottom-color: transparent;
+}
+
+body.home .ranking-row-me .ranking-name {
+  font-weight: 700;
+}
+
 body.home #toast-container .toast {
   background: var(--ink);
   color: #fff;

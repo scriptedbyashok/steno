@@ -66,7 +66,8 @@ function renderNavbar(user, activePage) {
 
   const adminLinks =
     user.role === "admin"
-      ? `<a href="admin.html" class="${activePage === "admin" ? "active" : ""}">Users</a>
+      ? `<a href="ranking.html" class="${activePage === "ranking" ? "active" : ""}">Ranking</a>
+         <a href="admin.html" class="${activePage === "admin" ? "active" : ""}">Users</a>
          <a href="config.html" class="${activePage === "config" ? "active" : ""}">Upload</a>`
       : "";
 

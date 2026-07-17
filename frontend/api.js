@@ -112,6 +112,24 @@ async function apiSubmitAttempt(id, typedText, timeTakenSeconds) {
   return res.json();
 }
 
+async function apiGetRanking(id) {
+  const res = await fetchWithColdStartRetry(
+    `${API_BASE_URL}/api/dictations/${id}/ranking`,
+    { headers: authHeaders() }
+  );
+  if (!res.ok) throw new Error("Failed to load ranking");
+  return res.json();
+}
+
+async function apiGetAdminRankings() {
+  const res = await fetchWithColdStartRetry(
+    `${API_BASE_URL}/api/admin/rankings`,
+    { headers: authHeaders() }
+  );
+  if (!res.ok) throw new Error("Failed to load rankings");
+  return res.json();
+}
+
 async function apiUploadDictation(formData) {
   const res = await fetchWithColdStartRetry(
     `${API_BASE_URL}/api/admin/dictations`,

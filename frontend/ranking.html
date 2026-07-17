@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rankings — Steno</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Pacifico&family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="admin-theme.css" />
+</head>
+<body class="admin-theme">
+  <header id="navbar-root" class="navbar"></header>
+
+  <div class="container">
+    <h1>Rankings</h1>
+
+    <section class="card">
+      <h2 style="margin-top: 0">Dictation Leaderboard Overview</h2>
+      <div id="ranking-list">Loading…</div>
+    </section>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="api.js"></script>
+  <script>
+    async function init() {
+      const user = await requireAuth({ adminOnly: true });
+      if (!user) return;
+      renderNavbar(user, "ranking");
+      loadRankings();
+    }
+
+    async function loadRankings() {
+      const listEl = document.getElementById("ranking-list");
+      listEl.innerHTML = spinnerHtml("Loading rankings…");
+      try {
+        const rankings = await apiGetAdminRankings();
+        renderRankingList(rankings);
+      } catch (err) {
+        listEl.textContent = "Failed to load rankings.";
+        showToast(err.message, "error");
+      }
+    }
+
+    function renderRankingList(rankings) {
+      const listEl = document.getElementById("ranking-list");
+      if (!rankings.length) {
+        listEl.textContent = "No dictations yet.";
+        return;
+      }
+      listEl.innerHTML = "";
+      rankings.forEach((r) => {
+        const row = document.createElement("div");
+        row.className = "ranking-row";
+        row.tabIndex = 0;
+        row.setAttribute("role", "button");
+        row.setAttribute("aria-label", `Open ${r.title}`);
+
+        const hasTopper = r.top_display_name !== null;
+        const topperLine = hasTopper
+          ? `<span class="ranking-row-topper">${r.top_display_name}</span>
+             <span class="ranking-row-accuracy">${r.top_accuracy}%</span>`
+          : `<span class="ranking-row-empty">No attempts yet</span>`;
+
+        row.innerHTML = `
+          <div class="ranking-row-main">
+            <span class="ranking-row-title">${r.title}</span>
+            <div class="ranking-row-topper-line">${topperLine}</div>
+          </div>
+          <div class="ranking-row-stats muted">
+            ${r.participant_count} participant${r.participant_count === 1 ? "" : "s"} &middot; ${r.attempt_count} attempt${r.attempt_count === 1 ? "" : "s"}
+          </div>
+        `;
+
+        const go = () => {
+          window.location.href = `test.html?id=${r.dictation_id}`;
+        };
+        row.addEventListener("click", go);
+        row.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            go();
+          }
+        });
+
+        listEl.appendChild(row);
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

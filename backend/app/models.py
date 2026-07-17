@@ -119,3 +119,21 @@ class SubmitResponse(BaseModel):
     missed: int
     extra: int
     word_diff: list[WordDiffItem]
+
+
+class RankingEntry(BaseModel):
+    rank: int
+    user_id: UUID
+    display_name: str
+    accuracy: float
+    time_taken_seconds: int | None = None
+    achieved_at: datetime
+
+
+class DictationRanking(BaseModel):
+    dictation_id: UUID
+    title: str
+    top_display_name: str | None = None
+    top_accuracy: float | None = None
+    participant_count: int
+    attempt_count: int
